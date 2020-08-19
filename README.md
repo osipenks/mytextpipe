@@ -15,14 +15,15 @@ are files stored in a file system on disk.
 ### Corpus disk structure 
 
 corpus  
-| -- readme.md  
-| -- corp-index.csv  
+&nbsp;| -- readme.md  
+&nbsp;| -- corp-index.csv  
 └ -- category 1  
-|&nbsp;&nbsp;&nbsp;&nbsp;| -- file 1  
-|&nbsp;&nbsp;&nbsp;&nbsp;└ -- file 2  
+&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;| -- file 1  
+&nbsp;|&nbsp;&nbsp;&nbsp;└ -- file 2  
 ...  
 └ -- category n  
-&nbsp;&nbsp;&nbsp;&nbsp;...  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| -- file 1  
+&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;└ -- file n
 
 ### Usage example
