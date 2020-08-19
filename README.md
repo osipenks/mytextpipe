@@ -25,7 +25,7 @@ corpus
 &nbsp;&nbsp;&nbsp;&nbsp;...  
 &nbsp;&nbsp;&nbsp;&nbsp;└ -- file n
 
-###Usage example
+### Usage example
 
 ```python
 from mytextpipe import corpus
