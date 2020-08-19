@@ -37,8 +37,11 @@ print(corp.stat())
 {'files': 4285, 'categories': 949, 'ext': ['png', 'jpg', 'html', 'bmp', 'gif']}
 ```
 
-### class FileCorpusReader
-Corpus with arbitrary files 
+### Class FileCorpusReader
+Handel corpus with arbitrary files 
 
-### class HTMLCorpusReader
-Html files corpus
+### Class HTMLCorpusReader
+Handel html files corpus
+
+### Class CorpusTransformer
+Convert one corpus to another 
