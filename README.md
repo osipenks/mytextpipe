@@ -38,10 +38,10 @@ print(corp.stat())
 ```
 
 ### Class FileCorpusReader
-Handel corpus with arbitrary files 
+Handle corpus with arbitrary files 
 
 ### Class HTMLCorpusReader
-Handel html files corpus
+Handle html files corpus
 
 ### Class CorpusTransformer
 Convert one corpus to another 

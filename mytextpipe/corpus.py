@@ -132,6 +132,12 @@ class FileCorpusReader(CorpusReader):
             yield path
 
     def stat(self, ids=None, categories=None):
+        """
+        Calc corpus statistics
+        :param ids: only for documents in ids list
+        :param categories: only for documents in categories list
+        :return: dictionary with metrics
+        """
 
         fileids = self.resolve(ids, categories)
 
@@ -145,12 +151,11 @@ class FileCorpusReader(CorpusReader):
             cat_count = len(set(categories))
 
         # Extensions
-        ext = []
+        ext = {}
         for path in self.abspath(fileids):
             file_name, file_ext = os.path.splitext(path)
             file_ext = file_ext.lower()[1:]
-            ext.append(file_ext)
-        ext = list(set(ext))
+            ext[file_ext] = ext[file_ext] + 1 if file_ext in ext else 1
 
         corp_size = sum([x for x in self.sizes()])
 
@@ -173,17 +178,21 @@ class FileCorpusReader(CorpusReader):
         for path in self.abspath(fileids):
             yield os.path.getsize(path)
 
-    def write_file_csv(self, folder=None):
-        # write csv
-        # folder,file,ext,size,readable, path
-        corpus_folder = self.root if folder is None else folder
+    def write_file_csv(self, path=None):
+        """
+        Dump list of files in csv file.
+        csv columns: category, file, ext, size, abs full path
+        :param path: write file to specific path, rather than in corpus root
+        :return:
+        """
+        corpus_folder = self.root
+        csv_file_name = os.path.join(corpus_folder, 'files.csv') if path is None else path
 
-        with open(os.path.join(corpus_folder, 'index.csv'), mode='w') as file:
-            csv_fields = ['folder', 'file', 'ext', 'size', 'path']
+        with open(csv_file_name, mode='w') as file:
+            csv_fields = ['category', 'file', 'ext', 'size', 'path']
             writer = csv.DictWriter(file, fieldnames=csv_fields, delimiter=',')
 
             writer.writeheader()
-            file_count = 0
 
             for root, dirs, files in os.walk(corpus_folder):
 
@@ -193,7 +202,6 @@ class FileCorpusReader(CorpusReader):
                 base_folder = os.path.split(root)[1]
 
                 for f in files:
-                    file_count += 1
 
                     file_path = os.path.join(root, f)
                     file_size = os.path.getsize(file_path)
@@ -203,7 +211,7 @@ class FileCorpusReader(CorpusReader):
                     file_ext = file_ext[1:].lower().strip()
 
                     writer.writerow({
-                        'folder': base_folder,
+                        'category': base_folder,
                         'file': f,
                         'ext': file_ext,
                         'size': file_size,
