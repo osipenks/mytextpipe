@@ -5,9 +5,13 @@ import re
 from bs4 import BeautifulSoup
 from nltk import sent_tokenize
 from nltk import word_tokenize
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class CorpusReader:
+    """A common base class for other corpus readers"""
 
     def __init__(self, root=None):
         self.root = root
@@ -15,7 +19,7 @@ class CorpusReader:
     def ids(self, count=None, categories=None):
         pass
 
-    def categories(self, categories=None, count=None):
+    def categories(self, count=None):
         pass
 
     def stat(self, ids=None, categories=None):
@@ -36,10 +40,9 @@ class FileCorpusReader(CorpusReader):
     def __init__(self, root=None):
         CorpusReader.__init__(self, root)
 
-    def categories(self, categories=None, count=None):
+    def categories(self, count=None):
         """
         Returns a list of categories
-        :param categories:
         :param count: maximum list size
         :return: list of strings or empty list
         """
@@ -56,8 +59,13 @@ class FileCorpusReader(CorpusReader):
 
         return cats
 
-    def category(self, file_id):
-        cat, file_name = os.path.split(file_id)
+    def category(self, doc_id):
+        """
+        Returns document's category
+        :param doc_id:
+        :return: string: document's category
+        """
+        cat, file_name = os.path.split(doc_id)
         return cat
 
     def ids(self, count=None, categories=None):
@@ -110,17 +118,26 @@ class FileCorpusReader(CorpusReader):
         proc_folder = doc_id.split(os.path.sep)[0]
         file, ext = os.path.splitext(os.path.basename(doc_id))
         src_folder = os.path.join(self.root, proc_folder)
-        return os.path.join(src_folder, file) + ext
+
+        abs_path = os.path.join(src_folder, file) + ext
+
+        return abs_path if os.path.isfile(abs_path) else ''
 
     def abspath(self, ids):
-
+        """
+        For a given document list returns document's absolute path in file system
+        :param ids: list of doc ids
+        :return: yield absolute path to doc file
+        """
         for fid in ids:
             cat_name, file_name = os.path.split(fid)
-            yield os.path.join(self.root, cat_name, file_name)
+            abs_path = os.path.join(self.root, cat_name, file_name)
+            if os.path.isfile(abs_path):
+                yield abs_path
 
     def docs(self, ids=None, categories=None):
         """
-        Returns absolute path of an file in corpus
+        Returns just absolute file path of doc
         :param ids:
         :param categories:
         :return:
@@ -168,7 +185,7 @@ class FileCorpusReader(CorpusReader):
 
     def sizes(self, ids=None, categories=None):
         """
-        Returns a list of tuples, the file id and size on disk of the file.
+        Returns list of tuples (the document id, document file size on disk)
         :param ids: text ids
         :param categories: text categories
         :return: file sizes
@@ -223,12 +240,12 @@ class FileCorpusReader(CorpusReader):
 
 class HTMLCorpusReader(FileCorpusReader):
 
-    def __init__(self, root=None):
+    def __init__(self, root=None, stemmer=None, clean_text=False, language='english'):
         FileCorpusReader.__init__(self, root)
         self.stop_words = ['.', ',', '”', '„', ',', '-', '(', ')', ':', '«', '»', ';', '–', '{', '}', '™']
-        self.stemmer = None
-        self.clean_text = False
-        self.language = 'english'
+        self.stemmer = stemmer
+        self.clean_text = clean_text
+        self.language = language
 
     def docs(self, ids=None, categories=None):
         """
@@ -239,8 +256,9 @@ class HTMLCorpusReader(FileCorpusReader):
 
         # Create a generator, loading one document into memory at a time
         for path in self.abspath(fileids):
-            with codecs.open(path, 'r') as f:
-                yield f.read()
+            if os.path.isfile(path):
+                with codecs.open(path, 'r') as f:
+                    yield f.read()
 
     def paras(self, ids=None, categories=None):
         """

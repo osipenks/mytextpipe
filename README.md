@@ -16,7 +16,7 @@ are files stored in a file system on disk.
 
 corpus  
 &nbsp;| -- readme.md  
-&nbsp;| -- corp-index.csv  
+&nbsp;| -- corpus-files.csv  
 └ -- category 1  
 &nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;| -- file 1  
 &nbsp;|&nbsp;&nbsp;&nbsp;└ -- file 2  

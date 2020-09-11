@@ -1,24 +1,30 @@
-
 class CorpusTransformer:
 
-    def __init__(self, corpus_source, corpus_target, ids=None):
-        self.source = corpus_source
-        self.target = corpus_target
-        self.ids = ids
+    def __init__(self, source, target, ids=None):
+        self.source = source
+        self.target = target
+        self.ids = ids if ids else []
 
-    def transform(self, ids=None, transformer=None, pre_processor=None, post_processor=None, debug=False):
-        count = 0
-        for doc_id in ids:
+    def transform(self, steps, step_args=None, ids=None, debug=False):
 
-            preprocessing = True
-            if pre_processor is not None:
-                preprocessing = pre_processor(corp=self.source, doc_id=doc_id)
+        # For each step get parameters as dict {step_name: step_params}
+        func_args = dict()
+        for step_name, step_func, corp in steps:
+            init_args = {'doc_id': '', 'corpus': corp}
+            func_args[step_name] = init_args
+            if step_args:
+                func_args[step_name] = step_args[step_name] if step_name in step_args else init_args
 
-            if preprocessing:
-                new_doc_id = transformer(source=self.source, target=self.target, doc_id=doc_id)
-                if new_doc_id:
-                    post_processor(corp=self.target, doc_id=new_doc_id)
+        doc_ids = ids if ids else self.ids
+        for doc_id in doc_ids:
+            prev_step = ''
+            for step_name, step_func, corp in steps:
+                if not prev_step:
+                    func_args[step_name]['doc_id'] = doc_id
+                    func_args[step_name]['corpus'] = corp
+                else:
+                    func_args[step_name]['doc_id'] = func_args[prev_step]['doc_id']
+                    func_args[step_name]['corpus'] = corp
 
-            if debug:
-                count += 1
-                print('{} {} to {}'.format(count, doc_id, new_doc_id))
+                step_func(func_args[step_name])
+                prev_step = step_name
