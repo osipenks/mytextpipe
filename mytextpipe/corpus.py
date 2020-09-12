@@ -17,22 +17,22 @@ class CorpusReader:
         self.root = root
 
     def ids(self, count=None, categories=None):
-        pass
+        raise NotImplementedError
 
     def categories(self, count=None):
-        pass
+        raise NotImplementedError
 
     def stat(self, ids=None, categories=None):
-        pass
+        raise NotImplementedError
 
     def abspath(self, ids):
-        pass
+        raise NotImplementedError
 
     def docs(self, ids=None, categories=None):
-        pass
+        raise NotImplementedError
 
     def sizes(self, ids=None, categories=None):
-        pass
+        raise NotImplementedError
 
 
 class FileCorpusReader(CorpusReader):
@@ -65,7 +65,7 @@ class FileCorpusReader(CorpusReader):
         :param doc_id:
         :return: string: document's category
         """
-        cat, file_name = os.path.split(doc_id)
+        cat, _ = os.path.split(doc_id)
         return cat
 
     def ids(self, count=None, categories=None):
