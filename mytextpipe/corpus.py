@@ -38,7 +38,7 @@ class CorpusReader:
 class FileCorpusReader(CorpusReader):
 
     def __init__(self, root=None):
-        CorpusReader.__init__(self, root)
+        super().__init__(root)
 
     def categories(self, count=None):
         """
@@ -46,7 +46,6 @@ class FileCorpusReader(CorpusReader):
         :param count: maximum list size
         :return: list of strings or empty list
         """
-        CorpusReader.categories(self, count)
         counter = 0
         cats = []
         for root, dirs, files in os.walk(self.root):
@@ -69,7 +68,6 @@ class FileCorpusReader(CorpusReader):
         return cat
 
     def ids(self, count=None, categories=None):
-        CorpusReader.ids(self, count, categories)
         counter = 0
         ids = []
         for root, dirs, files in os.walk(self.root):
