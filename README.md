@@ -34,11 +34,14 @@ CORPUS_ROOT = '/home/my/txt'
 corp = corpus.FileCorpusReader(CORPUS_ROOT)
 print(corp.stat())
 
-{'files': 4285, 'categories': 949, 'ext': ['png', 'jpg', 'html', 'bmp', 'gif']}
+{'files': 4285, 'categories': 949, 'ext': ['png', 'jpg', 'html', 'bmp', 'gif'], 'file_size': 191219, 'words': 37542}
 ```
 
 ### Class FileCorpusReader
 Handle corpus with arbitrary files 
+
+### Class TxtCorpusReader
+Handle text files corpus
 
 ### Class HTMLCorpusReader
 Handle html files corpus
