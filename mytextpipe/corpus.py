@@ -83,7 +83,15 @@ class FileCorpusReader(CorpusReader):
             if categories is not None and cat_str not in categories:
                 continue
 
+            # Hidden folder
+            if cat_str:
+                if cat_str[0] == '.':
+                    continue
+
             for file_name in files:
+                # Hidden file
+                if file_name[0] == '.':
+                    continue
                 if count is not None and counter == count:
                     return ids
 
@@ -198,7 +206,7 @@ class FileCorpusReader(CorpusReader):
         for path in self.abspath(fileids):
             yield os.path.getsize(path)
 
-    def write_file_csv(self, path=None):
+    def write_files_csv(self, path=None):
         """
         Dump list of files in csv file.
         csv columns: category, file, ext, size, abs full path
@@ -221,12 +229,21 @@ class FileCorpusReader(CorpusReader):
 
                 base_folder = os.path.split(root)[1]
 
+                # Hidden folder
+                if base_folder:
+                    if base_folder[0] == '.':
+                        continue
+
                 for f in files:
 
                     file_path = os.path.join(root, f)
                     file_size = os.path.getsize(file_path)
 
                     file_name, file_ext = os.path.splitext(f)
+
+                    # Hidden files
+                    if file_name[0] == '.':
+                        continue
 
                     file_ext = file_ext[1:].lower().strip()
 
