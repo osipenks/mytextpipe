@@ -30,11 +30,11 @@ corpus
 
 ```python
 from mytextpipe import corpus
-CORPUS_ROOT = '/home/my/txt'
+CORPUS_ROOT = '/home/my/txt_corpus'
 corp = corpus.FileCorpusReader(CORPUS_ROOT)
 print(corp.stat())
 
-{'files': 4285, 'categories': 949, 'ext': ['txt', 'html'], 'file_size': 191219, 'words': 37542}
+{'files': 35, 'categories': 12, 'ext': {'txt': 10, 'html': 25}, 'file_size': 191219, 'words': 37542}
 ```
 
 ### Class FileCorpusReader
