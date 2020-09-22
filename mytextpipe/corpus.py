@@ -2,10 +2,12 @@ import os
 import csv
 import codecs
 import re
+import statistics
 from bs4 import BeautifulSoup
 from nltk import sent_tokenize
 from nltk import word_tokenize
 import logging
+
 
 _logger = logging.getLogger(__name__)
 
@@ -172,13 +174,16 @@ class FileCorpusReader(CorpusReader):
             file_ext = file_ext.lower()[1:]
             ext[file_ext] = ext[file_ext] + 1 if file_ext in ext else 1
 
-        corp_size = sum([x for x in self.sizes()])
+        file_sizes = list([x for x in self.sizes(fileids)])
 
         return {
             'files': len(fileids),
             'categories': cat_count,
             'ext': ext,
-            'file_size': corp_size
+            'file_size': sum(file_sizes),
+            'max_file_size': max(file_sizes),
+            'min_file_size': min(file_sizes),
+            'mean_file_size': int(statistics.mean(file_sizes))
         }
 
     def sizes(self, ids=None, categories=None):
@@ -236,7 +241,7 @@ class FileCorpusReader(CorpusReader):
             file.close()
 
 
-class HTMLCorpusReader(FileCorpusReader):
+class TxtCorpusReader(FileCorpusReader):
 
     def __init__(self, root=None, stemmer=None, clean_text=False, language='english'):
         FileCorpusReader.__init__(self, root)
@@ -247,7 +252,7 @@ class HTMLCorpusReader(FileCorpusReader):
 
     def docs(self, ids=None, categories=None):
         """
-        Returns content of an HTML document
+        Returns content of an text document
         """
         # Resolve the fileids and the categories
         fileids = self.resolve(ids, categories)
@@ -259,24 +264,15 @@ class HTMLCorpusReader(FileCorpusReader):
                     yield f.read()
 
     def paras(self, ids=None, categories=None):
-        """
-        Uses BeautifulSoup to parse the paragraphs from the HTML.
-        """
-        # Tags to extract as paragraphs from the HTML text
-        tags = [
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'p', 'li', 'dd', 'dt'
-        ]
 
         clean_text = self.clean_text
 
-        for html in self.docs(ids, categories):
-            soup = BeautifulSoup(html, 'html.parser')
-            for element in soup.find_all(tags):
-                raw_text = element.text
+        for txt in self.docs(ids, categories):
+            for s in txt.splitlines():
+                raw_text = s.strip()
                 text = clean_paragraph(raw_text) if clean_text else raw_text
                 if text:
                     yield text
-            soup.decompose()
 
     def sents(self, ids=None, categories=None):
         """
@@ -314,6 +310,72 @@ class HTMLCorpusReader(FileCorpusReader):
 
             if word:
                 yield word
+
+    def stat(self, ids=None, categories=None):
+        """
+        Calc corpus statistics
+        :param ids: only for documents in ids list
+        :param categories: only for documents in categories list
+        :return: dictionary with metrics
+        """
+        stat_dict = super(TxtCorpusReader, self).stat(ids, categories)
+
+        stat_dict.update({
+            'paras': len(list(self.paras(ids, categories))),
+            'sents': len(list(self.sents(ids, categories))),
+            'words': len(list(self.words(ids, categories))),
+        })
+
+        return stat_dict
+
+    def write_para_csv(self, path=None, ids=None):
+        """
+        Dump list of paragraphs in csv file.
+        """
+        corpus_folder = self.root
+        csv_file_name = os.path.join(corpus_folder, 'paras.csv') if path is None else path
+
+        with open(csv_file_name, mode='w') as file:
+            csv_fields = ['para', 'file', 'category', 'ext']
+            writer = csv.DictWriter(file, fieldnames=csv_fields, delimiter=',')
+
+            writer.writeheader()
+
+            for para in self.paras(ids=ids):
+                writer.writerow({
+                        'para': para,
+                        'file': '',
+                        'ext': '',
+                        'category': '',
+                    })
+
+            file.close()
+
+
+class HTMLCorpusReader(TxtCorpusReader):
+
+    def __init__(self, root=None, stemmer=None, clean_text=False, language='english'):
+        super(HTMLCorpusReader, self).__init__(root = root, stemmer=stemmer, clean_text=clean_text, language=language)
+
+    def paras(self, ids=None, categories=None):
+        """
+        Uses BeautifulSoup to parse the paragraphs from the HTML.
+        """
+        # Tags to extract as paragraphs from the HTML text
+        tags = [
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'p', 'li', 'dd', 'dt'
+        ]
+
+        clean_text = self.clean_text
+
+        for html in self.docs(ids, categories):
+            soup = BeautifulSoup(html, 'html.parser')
+            for element in soup.find_all(tags):
+                raw_text = element.text
+                text = clean_paragraph(raw_text) if clean_text else raw_text
+                if text:
+                    yield text
+            soup.decompose()
 
 
 def clean_paragraph(text):
