@@ -34,7 +34,7 @@ CORPUS_ROOT = '/home/my/txt'
 corp = corpus.FileCorpusReader(CORPUS_ROOT)
 print(corp.stat())
 
-{'files': 4285, 'categories': 949, 'ext': ['png', 'jpg', 'html', 'bmp', 'gif'], 'file_size': 191219, 'words': 37542}
+{'files': 4285, 'categories': 949, 'ext': ['txt', 'html'], 'file_size': 191219, 'words': 37542}
 ```
 
 ### Class FileCorpusReader
