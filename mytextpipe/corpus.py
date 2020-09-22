@@ -244,7 +244,7 @@ class FileCorpusReader(CorpusReader):
 class TxtCorpusReader(FileCorpusReader):
 
     def __init__(self, root=None, stemmer=None, clean_text=False, language='english'):
-        FileCorpusReader.__init__(self, root)
+        super(TxtCorpusReader, self).__init__(root=root)
         self.stop_words = ['.', ',', '”', '„', ',', '-', '(', ')', ':', '«', '»', ';', '–', '{', '}', '™']
         self.stemmer = stemmer
         self.clean_text = clean_text
@@ -336,18 +336,21 @@ class TxtCorpusReader(FileCorpusReader):
         csv_file_name = os.path.join(corpus_folder, 'paras.csv') if path is None else path
 
         with open(csv_file_name, mode='w') as file:
-            csv_fields = ['para', 'file', 'category', 'ext']
+            csv_fields = ['para', 'id', 'doc', 'category']
             writer = csv.DictWriter(file, fieldnames=csv_fields, delimiter=',')
 
             writer.writeheader()
 
-            for para in self.paras(ids=ids):
-                writer.writerow({
-                        'para': para,
-                        'file': '',
-                        'ext': '',
-                        'category': '',
-                    })
+            for doc_id in ids:
+                para_id = 0
+                for para in self.paras(ids=[doc_id]):
+                    writer.writerow({
+                            'para': para,
+                            'id': para_id,
+                            'doc': doc_id,
+                            'category': self.category(doc_id),
+                        })
+                    para_id += 1
 
             file.close()
 
@@ -355,7 +358,7 @@ class TxtCorpusReader(FileCorpusReader):
 class HTMLCorpusReader(TxtCorpusReader):
 
     def __init__(self, root=None, stemmer=None, clean_text=False, language='english'):
-        super(HTMLCorpusReader, self).__init__(root = root, stemmer=stemmer, clean_text=clean_text, language=language)
+        super(HTMLCorpusReader, self).__init__(root=root, stemmer=stemmer, clean_text=clean_text, language=language)
 
     def paras(self, ids=None, categories=None):
         """
