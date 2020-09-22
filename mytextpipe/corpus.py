@@ -328,9 +328,9 @@ class TxtCorpusReader(FileCorpusReader):
 
         return stat_dict
 
-    def write_para_csv(self, path=None, ids=None):
+    def write_paras_csv(self, path=None, ids=None):
         """
-        Dump list of paragraphs in csv file.
+        Dump list of paragraphs to csv file.
         """
         corpus_folder = self.root
         csv_file_name = os.path.join(corpus_folder, 'paras.csv') if path is None else path
