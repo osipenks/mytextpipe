@@ -434,24 +434,14 @@ def clean_paragraph(text):
     clean_text = re.sub(r"""['’"`�]""", '', clean_text)
     clean_text = re.sub(r"""([0-9])([\u0400-\u04FF]|[A-z])""", r"\1 \2", clean_text)
     clean_text = re.sub(r"""([\u0400-\u04FF]|[A-z])([0-9])""", r"\1 \2", clean_text)
-    # clean_text = re.sub(r"""[\-.,:+*/_]""", ' ', clean_text)
 
-    # multiply ;;;;
+    # multiply ;;;; between alphanumerics
     clean_text = re.sub(r'(\w+|\d+);+(\w+|\d+)', r'\1 \2', clean_text)
 
     clean_text = re.sub(r"\s{1,}№\s{1,}", ' №', clean_text)
 
-    # т.ч.ПДВ
-    clean_text = re.sub(r"\s{1,}т.ч.\s{0,}", ' т.ч. ', clean_text)
-
-    # links
-    clean_text = re.sub('https?://\S+|www\.\S+', '', clean_text)
-    clean_text = re.sub('http?://\S+|www\.\S+', '', clean_text)
 
     clean_text = re.sub('…{1,}', '…', clean_text)
-
-    # underscores
-    clean_text = re.sub('_{1,}', '', clean_text)
 
     # underscores
     clean_text = re.sub('_{1,}', '', clean_text)
@@ -465,9 +455,6 @@ def clean_paragraph(text):
 
     # id=3303
     clean_text = re.sub('\s{0,}=\s{0,}', ' = ', clean_text)
-
-    # буд.ХХ
-    clean_text = re.sub('\s{0,}буд[.{1}]\s{0,}', 'буд. ', clean_text)
 
     # All characters are non alfa
     if re.match("^[0-9  .,-:+*_;\\/]+$", clean_text):
