@@ -429,37 +429,27 @@ class HTMLCorpusReader(TxtCorpusReader):
 
 def clean_paragraph(text):
     clean_text = text.strip()
-
-    # Del quotes and etc
+    # Delete quotes and etc
     clean_text = re.sub(r"""['’"`�]""", '', clean_text)
     clean_text = re.sub(r"""([0-9])([\u0400-\u04FF]|[A-z])""", r"\1 \2", clean_text)
     clean_text = re.sub(r"""([\u0400-\u04FF]|[A-z])([0-9])""", r"\1 \2", clean_text)
-
     # multiply ;;;; between alphanumerics
     clean_text = re.sub(r'(\w+|\d+);+(\w+|\d+)', r'\1 \2', clean_text)
-
-    clean_text = re.sub(r"\s{1,}№\s{1,}", ' №', clean_text)
-
-
-    clean_text = re.sub('…{1,}', '…', clean_text)
-
+    # some strange artifacts
+    clean_text = re.sub(r'\s+№\s+', ' №', clean_text)
+    clean_text = re.sub('…+', '…', clean_text)
     # underscores
-    clean_text = re.sub('_{1,}', '', clean_text)
-
+    clean_text = re.sub('_+', '', clean_text)
     # multi points
-    clean_text = re.sub('\.{1,}', '.', clean_text)
-
+    clean_text = re.sub('\.+', '.', clean_text)
     # slash
     clean_text = re.sub('/', ' ', clean_text)
     clean_text = re.sub('\\\\', ' ', clean_text)
-
     # id=3303
-    clean_text = re.sub('\s{0,}=\s{0,}', ' = ', clean_text)
-
+    clean_text = re.sub('\s*=\s*', r' = ', clean_text)
     # All characters are non alfa
-    if re.match("^[0-9  .,-:+*_;\\/]+$", clean_text):
+    if re.match('^[0-9  .,-:+*_;\\/]+$', clean_text):
         clean_text = ''
-
     # Too small for paragraph
     if len(clean_text) <= 3:
         clean_text = ''
