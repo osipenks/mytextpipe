@@ -4,7 +4,7 @@ import codecs
 import re
 import statistics
 from bs4 import BeautifulSoup
-from nltk import sent_tokenize
+from nltk.tokenize import sent_tokenize
 from nltk import word_tokenize
 import logging
 
@@ -206,7 +206,7 @@ class FileCorpusReader(CorpusReader):
         for path in self.abspath(fileids):
             yield os.path.getsize(path)
 
-    def write_files_csv(self, path=None):
+    def files_to_csv(self, path=None):
         """
         Dump list of files in csv file.
         csv columns: category, file, ext, size, abs full path
@@ -294,15 +294,17 @@ class TxtCorpusReader(FileCorpusReader):
     def sents(self, ids=None, categories=None):
         """
         Extract sentences from the paragraphs
+        # Todo: train sent_tokenizer
         """
         clean_text = self.clean_text
         language = self.language
 
         for paragraph in self.paras(ids, categories):
-            for sentence in sent_tokenize(paragraph, language):
-                text = clean_sentence(sentence) if clean_text else sentence
-                if text:
-                    yield text
+            for raw_sentence in sent_tokenize(paragraph, language):
+                for sentence in raw_sentence.strip().split('; '):
+                    text = clean_sentence(sentence) if clean_text else sentence
+                    if text:
+                        yield text
 
     def words(self, ids=None, categories=None):
         """
@@ -328,9 +330,10 @@ class TxtCorpusReader(FileCorpusReader):
             if word:
                 yield word
 
-    def stat(self, ids=None, categories=None):
+    def stat(self, ids=None, categories=None, count_words=False):
         """
         Calc corpus statistics
+        :param count_words:
         :param ids: only for documents in ids list
         :param categories: only for documents in categories list
         :return: dictionary with metrics
@@ -340,12 +343,38 @@ class TxtCorpusReader(FileCorpusReader):
         stat_dict.update({
             'paras': len(list(self.paras(ids, categories))),
             'sents': len(list(self.sents(ids, categories))),
-            'words': len(list(self.words(ids, categories))),
+            'words': len(list(self.words(ids, categories))) if count_words else 0,
         })
 
         return stat_dict
 
-    def write_paras_csv(self, path=None, ids=None):
+    def sents_to_csv(self, path=None, ids=None):
+        """
+        Dump list of sentences to csv file.
+        """
+        corpus_folder = self.root
+        csv_file_name = os.path.join(corpus_folder, 'sents.csv') if path is None else path
+
+        with open(csv_file_name, mode='w') as file:
+            csv_fields = ['sent', 'id', 'doc', 'category']
+            writer = csv.DictWriter(file, fieldnames=csv_fields, delimiter=',')
+
+            writer.writeheader()
+
+            for doc_id in ids:
+                sent_id = 0
+                for sent in self.sents(ids=[doc_id]):
+                    writer.writerow({
+                            'sent': sent,
+                            'id': sent_id,
+                            'doc': doc_id,
+                            'category': self.category(doc_id),
+                        })
+                    sent_id += 1
+
+            file.close()
+
+    def paras_to_csv(self, path=None, ids=None):
         """
         Dump list of paragraphs to csv file.
         """
@@ -407,11 +436,8 @@ def clean_paragraph(text):
     clean_text = re.sub(r"""([\u0400-\u04FF]|[A-z])([0-9])""", r"\1 \2", clean_text)
     # clean_text = re.sub(r"""[\-.,:+*/_]""", ' ', clean_text)
 
-    # Format п.п.1 п.5 ст. 41 Закону України
-    clean_text = re.sub(r"\s{1,}п.\s{1,}", ' п.', clean_text)
-    clean_text = re.sub(r"\s{1,}ч.\s{1,}", ' ч.', clean_text)
-    clean_text = re.sub(r"ст.\s{1,}", 'ст.', clean_text)
-    clean_text = re.sub(r"\s{1,}п.\s{0,}п.\s{0,}", ' п.п.', clean_text)
+    # multiply ;;;;
+    clean_text = re.sub(r'(\w+|\d+);+(\w+|\d+)', r'\1 \2', clean_text)
 
     clean_text = re.sub(r"\s{1,}№\s{1,}", ' №', clean_text)
 
