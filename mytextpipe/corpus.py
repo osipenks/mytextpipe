@@ -255,8 +255,6 @@ class FileCorpusReader(CorpusReader):
                         'path': file_path
                     })
 
-            file.close()
-
 
 class TxtCorpusReader(FileCorpusReader):
 
